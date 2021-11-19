@@ -2,6 +2,7 @@ import os
 import sqlite3
 from sqlite3.dbapi2 import Cursor, paramstyle
 from dataclasses import dataclass
+from data import InitializeDB
 
 
 
@@ -132,7 +133,7 @@ def parser(string):
 
 
 def main():
-    cursor = sqlite3.connect('shop.db')
+    cursor = InitializeDB()
     print("Welcome")
     while 1:
         username = input(str("Username: "))
