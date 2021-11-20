@@ -86,7 +86,7 @@ class account():
     def __init__(self, fName, lName, username, password, creditCard, shippingAddr, billingAddr):
         self.account = accountclass(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
         #insert new account in db
-        tuple = fName, lName, username, password, creditCard, shippingAddr, billingAddr
+        tuple = (fName, lName, username, password, creditCard, shippingAddr, billingAddr)
         queryStr = '''INSERT INTO Account VALUES (?, ?, ?, ?, ?, ?, ?)'''
         connection.execute(queryStr, tuple)
         connection.commit()
@@ -105,7 +105,7 @@ class account():
         #query for usernames record
         queryStr = '''SELECT * FROM Account WHERE username=?'''
         result = connection.execute(queryStr, (usernameEntered,)).fetchone()
-        print(result)
+        
         if result:    
             if result[3] == enteredPassword:
                 return accountclass(result[0], result[1], result[2], result[3], result[4], result[5], result[6])
@@ -190,7 +190,7 @@ def main(user):
         else:
             continue
 
-    
+    print("Authentication successful: ")
 #    while 1:
 #        command = input(str("Enter command:"))
 #        parser(command)
