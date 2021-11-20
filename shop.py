@@ -1,10 +1,10 @@
 import os
 import sqlite3
-from sqlite3.dbapi2 import Cursor, paramstyle
+from sqlite3.dbapi2 import Connection, Cursor, paramstyle
 from dataclasses import dataclass
 from data import InitializeDB
 
-
+connection = InitializeDB()
 
 @dataclass
 class itemclass:
@@ -12,6 +12,17 @@ class itemclass:
         itemclass.id = id
         itemclass.name = name
         itemclass.quantity = quantity
+
+@dataclass
+class accountclass:
+    def __init__(self, fName, lName, username, password, creditCard, shippingAddr, billingAddr):
+        itemclass.fName = fName
+        itemclass.lName = lName
+        itemclass.username = username
+        itemclass.password = password
+        itemclass.creditCard = creditCard
+        itemclass.shippingAddr = shippingAddr
+        itemclass.billingAddr = billingAddr
 
 
 class inventory:
@@ -49,6 +60,7 @@ class cart:
         id = 0
         temp = itemclass(id, item, quantity) 
         if any(i.name == temp.name for i in self.itemlist):
+            return
             
         if inventoryObject.checkInventory(item, quantity):
 
@@ -70,11 +82,14 @@ class cart:
         
 
 
-class account:
-    def __init__(self, username, address, payment):
-        self.username = username
-        self.address = address
-        self.payment = payment
+class account():
+    def __init__(self, fName, lName, username, password, creditCard, shippingAddr, billingAddr):
+        self.account = accountclass(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
+        #insert new account in db
+        tuple = fName, lName, username, password, creditCard, shippingAddr, billingAddr
+        queryStr = '''INSERT INTO Account VALUES (?, ?, ?, ?, ?, ?, ?)'''
+        connection.execute(queryStr, tuple)
+        connection.commit()
 
     def editShippingInfo(self, newAddress):
         self.address = newAddress
@@ -83,6 +98,21 @@ class account:
     def editPaymentInfo(self, newPayment):
         self.payment = newPayment
 
+    def editPassword(self, newPassword):
+        self.password = newPassword
+
+    def authenticate(usernameEntered, enteredPassword):
+        #query for usernames record
+        queryStr = '''SELECT * FROM Account WHERE username=?'''
+        result = connection.execute(queryStr, (usernameEntered,)).fetchone()
+        print(result)
+        if result:    
+            if result[3] == enteredPassword:
+                return accountclass(result[0], result[1], result[2], result[3], result[4], result[5], result[6])
+            else:
+                return None            
+                
+        
 
 
 class orderHistory:
@@ -103,48 +133,69 @@ class orderHistory:
 
 
 
-def parser(string):
-    match string:
-            case ("view items"):
-                return viewItems()
-            case ("view cart"):
-                return viewCart()
-            case ("add items"):
-                return addItems()
-            case("remove from cart"):
-                return removeFromCart()
-            case ("checkout"):
-                return checkout()
-            case ("add order to history"):
-                return addOrderHistory()
-            case ("view order history"):
-                return viewOrderHistory()
-            case ("edit account"):
-                return editAccount()
-            case ("delete account"):
-                return deleteAccount()
-            case ("logout"):
-                return logout()
-            case _:
-                print("Error: Command invalid")
-                return -1
+#def parser(string):
+#    match string:
+#            case ("view items"):
+#                return viewItems()
+#            case ("view cart"):
+#                return viewCart()
+#            case ("add items"):
+#                return addItems()
+#            case("remove from cart"):
+#                return removeFromCart()
+#            case ("checkout"):
+#                return checkout()
+#            case ("add order to history"):
+#                return addOrderHistory()
+#            case ("view order history"):
+#                return viewOrderHistory()
+#            case ("edit account"):
+#                return editAccount()
+#            case ("delete account"):
+#                return deleteAccount()
+#            case ("logout"):
+#                return logout()
+#            case _:
+#                print("Error: Command invalid")
+#                return -1
 
     
 
 
-def main():
-    cursor = InitializeDB()
+def main(user):
+    
+    
     print("Welcome")
     while 1:
-        username = input(str("Username: "))
-        password = input(str("Password: "))
-        if username == password:
+        loginChoice = input(str("login or create account? "))
+        if loginChoice == 'login':
+            username = input(str("Username: "))            
+            password = input(str("Password: "))
+            user = account.authenticate(username, password)
+            if user:
+                break
+            else:
+                print("Error: Username and password do not match")
+                continue
+        elif loginChoice == 'create account':
+            fName = input(str("Enter your first name: "))
+            lName = input(str("Enter your last name "))
+            username = input(str("Enter New Username: "))
+            password = input(str("Enter Password: "))
+            creditCard = input(str("Enter card number: "))
+            shippingAddr = input(str("Enter your Shipping Address: "))
+            billingAddr = input(str("Enter your Billing Addrress: "))
+            user = account(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
             break
         else:
-            print("Error: Username and password do not match")
-    while 1:
-        command = input(str("Enter command:"))
-        parser(command)
+            continue
 
-if __name__=="__main":
-    main()
+    print("Authentication successful: ")
+#    while 1:
+#        command = input(str("Enter command:"))
+#        parser(command)
+
+
+if __name__=="__main__":
+    user: accountclass = None
+    main(user)

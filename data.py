@@ -6,7 +6,7 @@ import sqlite3
 def InitializeDB(dbFile='/shop.db'):
     connection = sqlite3.connect(os.getcwd() + dbFile)
     #create tables
-    connection.execute('''CREATE TABLE IF NOT EXISTS User
+    connection.execute('''CREATE TABLE IF NOT EXISTS Account
     (fName           TEXT    NOT NULL,
      lName           TEXT    NOT NULL,
      username           TEXT    NOT NULL,
