@@ -186,11 +186,11 @@ def main(user):
             shippingAddr = input(str("Enter your Shipping Address: "))
             billingAddr = input(str("Enter your Billing Addrress: "))
             user = account(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
-            break
+            continue
         else:
             continue
 
-    print("Authentication successful: ")
+    
 #    while 1:
 #        command = input(str("Enter command:"))
 #        parser(command)
