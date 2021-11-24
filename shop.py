@@ -8,11 +8,24 @@ from data import InitializeDB
 connection = InitializeDB()
 
 @dataclass
-class itemclass:
-    def __init__(self, id, name, quantity):
-        itemclass.id = id
-        itemclass.name = name
-        itemclass.quantity = quantity
+class cartclass:
+    def __init__(self, pk, userID, ordered):
+        #primary key of cart id in db
+        cartclass.pk = pk
+        cartclass.userID = userID
+        #1 or 0 to represent ordered status
+        cartclass.ordered = ordered
+
+@dataclass
+class cartitemclass:
+    def __init__(self, pk, cartID, movieID, quantity):
+        #primary key of DB entry
+        self.pk = pk
+        #cart the entry corresponds to
+        self.cartID = cartID
+        #movie referenced by cart entry
+        self.movieID = movieID
+        #quantity of movies
 
 @dataclass
 class accountclass:
@@ -28,7 +41,8 @@ class accountclass:
 
 @dataclass
 class movieclass:
-    def __init__(self, serial, title, price, rating, genre, quantity):
+    def __init__(self, pk, serial, title, price, rating, genre, quantity):
+        self.pk = pk
         self.serial = serial
         self.title = title
         self.price = price
@@ -40,12 +54,10 @@ class inventory:
     def __init__(self):
         #SQL Query to get all avalable movies
         self.inventory = []
-        result = connection.execute("SELECT * FROM Movie").fetchall()
-        i = 0
+        result = connection.execute("SELECT rowid, * FROM Movie").fetchall()
         for item in result:
-            movie = movieclass(item[0], item[1], item[2], item[3], item[4], item[5])
-            self.inventory.insert(i, movie)
-            i += 1
+            movie = movieclass(item[0], item[1], item[2], item[3], item[4], item[5], item[6])
+            self.inventory.append(movie)
         
 
     def viewInventory(self):
@@ -77,7 +89,8 @@ class inventory:
 
 class cart:
     def __init__(self):
-        self.itemlist = []
+        self.entries: cartitemclass = []
+        self.cart: cartclass = None
     
     def viewCart(self):
         for i in self.itemlist:
@@ -86,7 +99,7 @@ class cart:
     def addToCart(self, item, quantity, inventoryObject):
         # SQL statement to pull item info
         id = 0
-        temp = itemclass(id, item, quantity) 
+        temp = cartclass(id, item, quantity) 
         if any(i.name == temp.name for i in self.itemlist):
             return
             
