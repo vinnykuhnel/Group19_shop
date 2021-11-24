@@ -23,7 +23,7 @@ def InitializeDB(dbFile='/shop.db'):
      rating          TEXT    NULL,
      genre           TEXT    NULL,
      quantity        INTEGER    NOT NULL,
-     CONSTRAINT UC_Movie UNIQUE (serial, title, price, quantity));''')
+     CONSTRAINT UC_Movie UNIQUE (serial, title));''')
 
     connection.execute('''CREATE TABLE IF NOT EXISTS Cart
      (userID     INTEGER    NOT NULL,
@@ -37,7 +37,14 @@ def InitializeDB(dbFile='/shop.db'):
       FOREIGN KEY(movieID) REFERENCES Movie(rowid),
      FOREIGN KEY(cartID) REFERENCES Cart(rowid));''')
 
-    
+    try:
+        connection.execute("INSERT INTO Movie VALUES ('197278', 'The Shawshank Redemption', 19.99, 'R', 'Drama', 75)")
+        connection.execute("INSERT INTO Movie VALUES ('142389', 'The Godfather', 25.49, 'R', 'Crime, Drama', 45)")
+        connection.execute("INSERT INTO Movie VALUES ('239847', 'Inception', 15.69, 'PG-13', 'Action, Adventure, Sci-Fi', 123)")
+    except:
+        pass
+        
+
     return connection
     
 InitializeDB()
