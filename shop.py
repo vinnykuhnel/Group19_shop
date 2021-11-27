@@ -78,12 +78,23 @@ class inventory:
             print("Quantity: " + str(item.quantity))
             print("\n")
 
-    def updateInventory(item, remove = True):
+    def updateInventory(self, pk, quantity, remove = False):
+        movie = None
+        for item in self.inventory:
+            if item.pk == pk:
+                movie = item
+                break
+
         if remove:
             # SQL statement to decrease item's quantity by quantity parameter
-            # Add error checking to make sure the do not decrease past 0 quantity
+            tuple = (movie.quantity - quantity, movie.pk)
+            print(tuple)
+            queryStr = '''UPDATE Movie SET quantity = ? WHERE rowid = ?'''
+            connection.execute(queryStr, tuple)
+            connection.commit()
             return 0
         else:
+            #May not be needed, discuss with group
             # SQL statement to increase item's quantity by quantity parameter
             return 0
     
@@ -135,9 +146,7 @@ class cart:
         queryStr = '''SELECT rowid, * FROM CartItem WHERE cartID=?'''
         result = connection.execute(queryStr, tuple).fetchall()
         for item in result:
-            self.entries.append(cartitemclass(item[0], item[1], item[2], item[3], item[4]))
-
-        
+            self.entries.append(cartitemclass(item[0], item[1], item[2], item[3], item[4]))        
     
     def viewCart(self):
         #display items in current cart
@@ -145,9 +154,7 @@ class cart:
         for i in self.entries:
             print ("Entry Num: " + str(i.pk) + " Title: " + i.title + " Quantity: " + str(i.quantity))
 
-    def addToCart(self, movieID, movieTitle, quantity):
-        
-        
+    def addToCart(self, movieID, movieTitle, quantity):             
         
         if movieID > 0:
             #SQL statement to add a entry in cart item table
@@ -161,15 +168,14 @@ class cart:
             return False
         
 
-    def removeFromCart(self, item):
-        self.itemlist.remove(item)
-        # SQL statement to remove item from cart
+    def removeFromCart(self, itemID):
+        connection.execute("DELETE FROM CartItem WHERE rowid=?", (itemID,))
+        connection.commit()
 
-    def checkout(self, inventoryObject):
-        for i in self.itemlist:
-            inventoryObject.checkInventory(i)
-        self.itemlist.clear()
-        inventory.addToOrderHistory()
+    def checkout(self):
+        connection.execute('''UPDATE Cart SET ordered = 1 WHERE rowid = ?''', (self.cart.pk,))
+        connection.commit()
+        self.entries.clear()
         
 
 
@@ -232,9 +238,9 @@ class orderHistory:
 
 
 def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user: account):
-        #Initialize the cart userr will be working with
+        #Initialize or update the cart/inventory user will be working with
         userCart.assignCart(user.account.id)
-
+        movies.UpdateInventoryList()
         
 
         #match typed command to action
@@ -253,9 +259,21 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
                 print("Enter a valid title and quantity!")
                 
         elif string == "remove from cart":
-            userCart.removeFromCart()
+            cartID = input(str("Enter cart Num you would like to remove: "))
+            userCart.removeFromCart(cartID)
         elif string ==  "checkout":
-            cart.checkout()
+            validCart = True
+            for item in userCart.entries:
+                if movies.checkInventory(item.title, item.quantity) > 0:
+                    continue
+                else:
+                    validCart = False
+            if validCart:
+                for item in userCart.entries:
+                    #Update number in inventory
+                    movies.updateInventory(item.movieID, item.quantity, True)
+                #change cart entry to ordered
+                userCart.checkout()
         elif string ==  "add order to history":
             orders.addOrderHistory()
         elif string == "view order history":
@@ -272,7 +290,6 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
     
 def main(user):
     movies = inventory()
-    movies.UpdateInventoryList()
     orders = orderHistory()
     userCart = cart()
     print("Welcome")
@@ -285,10 +302,10 @@ def main(user):
             acc: accountclass = account.authenticate(username, password)
             user = account()
             user.account = acc
-            if user:
+            if user.account:
                 break
             else:
-                print("Error: Username and password do not match")
+                print("Error: Username and password is incorrect")
                 continue
         elif loginChoice == 'create account':
             fName = input(str("Enter your first name: "))
