@@ -9,12 +9,13 @@ connection = InitializeDB()
 
 @dataclass
 class cartclass:
-    def __init__(self, pk, userID, ordered):
+    def __init__(self, pk, userID, ordered, total):
         #primary key of cart id in db
         cartclass.pk = pk
         cartclass.userID = userID
         #1 or 0 to represent ordered status
         cartclass.ordered = ordered
+        cartclass.total = total
 
 @dataclass
 #represents an entry in the cart item database table
@@ -89,10 +90,10 @@ class inventory:
             # SQL statement to decrease item's quantity by quantity parameter
             tuple = (movie.quantity - quantity, movie.pk)
             print(tuple)
-            queryStr = '''UPDATE Movie SET quantity = ? WHERE rowid = ?'''
+            queryStr = '''UPDATE Movie SET quantity = ? WHERE rowid=?'''
             connection.execute(queryStr, tuple)
             connection.commit()
-            return 0
+            return (movie.price * quantity)
         else:
             #May not be needed, discuss with group
             # SQL statement to increase item's quantity by quantity parameter
@@ -121,7 +122,7 @@ class cart:
         queryStr = '''SELECT rowid, * FROM Cart WHERE userID=? AND ordered=?'''
         result = connection.execute(queryStr, tuple).fetchone()
         if result:                        
-            self.cart = cartclass(result[0], result[1], result[2])
+            self.cart = cartclass(result[0], result[1], result[2], result[3])
             
         else:
             
@@ -131,13 +132,13 @@ class cart:
     
     def newCart(self, userID):
         #create a new cart for certain user
-        tuple = (userID, 0)
-        queryStr = '''INSERT INTO Cart VALUES (?, ?)'''
+        tuple = (userID, 0, 0)
+        queryStr = '''INSERT INTO Cart VALUES (?, ?, ?)'''
         connection.execute(queryStr, tuple)
         connection.commit()
         result = connection.execute("SELECT last_insert_rowid();").fetchone()
         
-        self.cart = cartclass(result[0], userID, 0)
+        self.cart = cartclass(result[0], userID, 0, 0)
     
     def getItems(self):
         self.entries: cartitemclass = []
@@ -172,8 +173,8 @@ class cart:
         connection.execute("DELETE FROM CartItem WHERE rowid=?", (itemID,))
         connection.commit()
 
-    def checkout(self):
-        connection.execute('''UPDATE Cart SET ordered = 1 WHERE rowid = ?''', (self.cart.pk,))
+    def checkout(self, total):
+        connection.execute('''UPDATE Cart SET ordered = 1, total = ? WHERE rowid=?''', (total, self.cart.pk))
         connection.commit()
         self.entries.clear()
         
@@ -225,11 +226,16 @@ class orderHistory:
         # SQL statement to update current cart to new cart 
         return 0
 
-    def displayOrderHistory():
+    def displayOrderHistory(self, userID):
+        carts = connection.execute('''SELECT rowid, total FROM Cart WHERE userID=?''', (userID,)).fetchall()
         # SQL statement to retrieve all of the orders
-        order = []
-        for i in order:
-            print (i)
+        for item in carts:
+            cart = connection.execute('''SELECT * FROM CartItem WHERE cartID=?''', (item[0],)).fetchall()
+            for i in cart:
+                print("Order #: " + str(i[0]) + " Title: " + i[2] + "  Quantity: " + str(i[3]))
+            if cart:
+                print("TOTAL: " + str(item[1]))
+        
 
 
 
@@ -263,6 +269,7 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
             userCart.removeFromCart(cartID)
         elif string ==  "checkout":
             validCart = True
+            total = 0
             for item in userCart.entries:
                 if movies.checkInventory(item.title, item.quantity) > 0:
                     continue
@@ -271,13 +278,14 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
             if validCart:
                 for item in userCart.entries:
                     #Update number in inventory
-                    movies.updateInventory(item.movieID, item.quantity, True)
+                    total += movies.updateInventory(item.movieID, item.quantity, True)
                 #change cart entry to ordered
-                userCart.checkout()
+                print(total)
+                userCart.checkout(total)
         elif string ==  "add order to history":
             orders.addOrderHistory()
         elif string == "view order history":
-            orders.viewOrderHistory()
+            orders.displayOrderHistory(user.account.id)
         elif string == "edit account":
             user.editAccount()
         elif string ==  "delete account":
@@ -323,7 +331,7 @@ def main(user):
 
     print("Authentication successful: ")
     while 1:
-        print("Options => view items, view cart, add cart item, remove from cart, checkout, add order to history, edit account, delete account, logout")
+        print("Options => view items, view cart, add cart item, remove from cart, checkout, view order history, edit account, delete account, logout")
         command = input(str("Enter one of the commands above: "))
         movies, orders, userCart, user = parser(command, movies, orders, userCart, user)
 

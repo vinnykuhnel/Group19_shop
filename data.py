@@ -28,6 +28,7 @@ def InitializeDB(dbFile='/shop.db'):
     connection.execute('''CREATE TABLE IF NOT EXISTS Cart
      (userID     INTEGER    NOT NULL,
       ordered    INTEGER  DEFAULT 0  NOT NULL,
+      total    REAL  DEFAULT 0  NOT NULL,
      FOREIGN KEY(userID) REFERENCES User(rowid));''')
 
     connection.execute('''CREATE TABLE IF NOT EXISTS CartItem
@@ -42,6 +43,9 @@ def InitializeDB(dbFile='/shop.db'):
         connection.execute("INSERT INTO Movie VALUES ('197278', 'The Shawshank Redemption', 19.99, 'R', 'Drama', 75)")
         connection.execute("INSERT INTO Movie VALUES ('142389', 'The Godfather', 25.49, 'R', 'Crime, Drama', 45)")
         connection.execute("INSERT INTO Movie VALUES ('239847', 'Inception', 15.69, 'PG-13', 'Action, Adventure, Sci-Fi', 123)")
+        connection.execute("INSERT INTO Movie VALUES ('927123', 'Goodfellas', 17, 'R', 'Crime', 1323)")
+        connection.execute("INSERT INTO Account VALUES ('adam', 'test', 'adam', 'pass', '445 4544 2324 4524', 'example', 'street')")
+
     except:
         pass
         
