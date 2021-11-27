@@ -33,6 +33,7 @@ def InitializeDB(dbFile='/shop.db'):
     connection.execute('''CREATE TABLE IF NOT EXISTS CartItem
      (cartID     INTEGER    NOT NULL,
       movieID    INTEGER    NOT NULL,
+      title      TEXT       NOT NULL,
       quantity   INTEGER    NOT NULL,
       FOREIGN KEY(movieID) REFERENCES Movie(rowid),
      FOREIGN KEY(cartID) REFERENCES Cart(rowid));''')

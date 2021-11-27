@@ -17,15 +17,19 @@ class cartclass:
         cartclass.ordered = ordered
 
 @dataclass
+#represents an entry in the cart item database table
 class cartitemclass:
-    def __init__(self, pk, cartID, movieID, quantity):
+    def __init__(self, pk, cartID, movieID, title, quantity):
         #primary key of DB entry
         self.pk = pk
         #cart the entry corresponds to
         self.cartID = cartID
         #movie referenced by cart entry
         self.movieID = movieID
+        #title of movie
+        self.title = title
         #quantity of movies
+        self.quantity = quantity
 
 @dataclass
 class accountclass:
@@ -51,14 +55,16 @@ class movieclass:
         self.quantity = quantity
 
 class inventory:
-    def __init__(self):
+    def __init__(self):        
+        self.inventory: movieclass = []
+        
+    def UpdateInventoryList(self):
+        self.inventory.clear()
         #SQL Query to get all avalable movies
-        self.inventory = []
         result = connection.execute("SELECT rowid, * FROM Movie").fetchall()
         for item in result:
             movie = movieclass(item[0], item[1], item[2], item[3], item[4], item[5], item[6])
-            self.inventory.append(movie)
-        
+            self.inventory.append(movie)        
 
     def viewInventory(self):
                 
@@ -81,8 +87,14 @@ class inventory:
             # SQL statement to increase item's quantity by quantity parameter
             return 0
     
-    def checkInventory(item, quantity):
-        # SQL statement to make sure the item has enough inventory
+    def checkInventory(self, movieName, quantity):
+        movieCheck = None
+        for item in self.inventory:
+            if item.title == movieName:
+                movieCheck = item
+        if movieCheck:
+            if movieCheck.quantity >= quantity:
+                return movieCheck.pk
         return 0
 
 
@@ -92,23 +104,61 @@ class cart:
         self.entries: cartitemclass = []
         self.cart: cartclass = None
     
-    def viewCart(self):
-        for i in self.itemlist:
-            print (i)
-
-    def addToCart(self, item, quantity, inventoryObject):
-        # SQL statement to pull item info
-        id = 0
-        temp = cartclass(id, item, quantity) 
-        if any(i.name == temp.name for i in self.itemlist):
-            return
+    def assignCart(self, userID):
+        #check for a current non-ordered cart corresponding to user
+        tuple = (userID, 0)
+        queryStr = '''SELECT rowid, * FROM Cart WHERE userID=? AND ordered=?'''
+        result = connection.execute(queryStr, tuple).fetchone()
+        if result:                        
+            self.cart = cartclass(result[0], result[1], result[2])
             
-        if inventoryObject.checkInventory(item, quantity):
-
-            self.itemlist.append(item)
-            # SQL statement to update cart in database
         else:
-            print("Error")
+            
+            self.newCart(userID)
+        self.getItems()
+
+    
+    def newCart(self, userID):
+        #create a new cart for certain user
+        tuple = (userID, 0)
+        queryStr = '''INSERT INTO Cart VALUES (?, ?)'''
+        connection.execute(queryStr, tuple)
+        connection.commit()
+        result = connection.execute("SELECT last_insert_rowid();").fetchone()
+        
+        self.cart = cartclass(result[0], userID, 0)
+    
+    def getItems(self):
+        self.entries: cartitemclass = []
+        #Add all entries in Cart Items table to list
+        tuple = (self.cart.pk,)
+        queryStr = '''SELECT rowid, * FROM CartItem WHERE cartID=?'''
+        result = connection.execute(queryStr, tuple).fetchall()
+        for item in result:
+            self.entries.append(cartitemclass(item[0], item[1], item[2], item[3], item[4]))
+
+        
+    
+    def viewCart(self):
+        #display items in current cart
+        print("Items in your Cart: ")
+        for i in self.entries:
+            print ("Entry Num: " + str(i.pk) + " Title: " + i.title + " Quantity: " + str(i.quantity))
+
+    def addToCart(self, movieID, movieTitle, quantity):
+        
+        
+        
+        if movieID > 0:
+            #SQL statement to add a entry in cart item table
+            tuple = (self.cart.pk, movieID, movieTitle, quantity)
+            queryStr = '''INSERT INTO CartItem VALUES (?, ?, ?, ?)'''
+            connection.execute(queryStr, tuple)
+            connection.commit()
+            return True
+            
+        else:
+            return False
         
 
     def removeFromCart(self, item):
@@ -182,13 +232,26 @@ class orderHistory:
 
 
 def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user: account):
-    
+        #Initialize the cart userr will be working with
+        userCart.assignCart(user.account.id)
+
+        
+
+        #match typed command to action
         if string == "view items":
             movies.viewInventory()
         elif string == "view cart":
             userCart.viewCart()
-        elif string == "add items":
-            movies.addItems()
+        elif string == "add cart item":
+            
+            movieName = input(str("Enter the name of the movie: "))
+            quantity = int(input("Enter the number of copies: "))
+            
+            if userCart.addToCart(movies.checkInventory(movieName, quantity), movieName, quantity):
+                print("Item was Successfilly added to cart!")
+            else:
+                print("Enter a valid title and quantity!")
+                
         elif string == "remove from cart":
             userCart.removeFromCart()
         elif string ==  "checkout":
@@ -209,6 +272,7 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
     
 def main(user):
     movies = inventory()
+    movies.UpdateInventoryList()
     orders = orderHistory()
     userCart = cart()
     print("Welcome")
@@ -242,7 +306,8 @@ def main(user):
 
     print("Authentication successful: ")
     while 1:
-        command = input(str("Enter command:"))
+        print("Options => view items, view cart, add cart item, remove from cart, checkout, add order to history, edit account, delete account, logout")
+        command = input(str("Enter one of the commands above: "))
         movies, orders, userCart, user = parser(command, movies, orders, userCart, user)
 
 
