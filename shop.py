@@ -287,7 +287,9 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
         elif string == "view order history":
             orders.displayOrderHistory(user.account.id)
         elif string == "edit account":
-            user.editAccount()
+            user.editPassword()
+            user.editPaymentInfo()
+            user.editShippingInfo()
         elif string ==  "delete account":
             user.deleteAccount()
         elif string ==  "logout":
