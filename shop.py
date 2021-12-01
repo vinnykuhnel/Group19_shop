@@ -89,6 +89,7 @@ class inventory:
         if remove:
             # SQL statement to decrease item's quantity by quantity parameter
             tuple = (movie.quantity - quantity, movie.pk)
+            print(tuple)
             queryStr = '''UPDATE Movie SET quantity = ? WHERE rowid=?'''
             connection.execute(queryStr, tuple)
             connection.commit()
@@ -242,7 +243,7 @@ class orderHistory:
 
 
 
-def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user: account, session: bool):
+def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user: account):
         #Initialize or update the cart/inventory user will be working with
         userCart.assignCart(user.account.id)
         movies.UpdateInventoryList()
@@ -261,10 +262,10 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
             if userCart.addToCart(movies.checkInventory(movieName, quantity), movieName, quantity):
                 print("Item was Successfilly added to cart!")
             else:
-                print("Enter a valid title and quantity!")
+                print("Error! You enter either an invalid title or quantity. Pleae try again.")
                 
         elif string == "remove from cart":
-            cartID = input(str("Enter cart Num you would like to remove: "))
+            cartID = input(str("Enter the cart Num you would like to remove: "))
             userCart.removeFromCart(cartID)
         elif string ==  "checkout":
             validCart = True
@@ -292,57 +293,52 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
         elif string ==  "delete account":
             user.deleteAccount()
         elif string ==  "logout":
-            session = False
+            user.logout()
         else:
-            print("Error: Command invalid")
-        return movies, orders, userCart, user, session
+            print("Error! You entered an invalid Command. Please try again.")
+        return movies, orders, userCart, user
     
-def main():   
-    
+def main(user):
+    movies = inventory()
+    orders = orderHistory()
+    userCart = cart()
+    print("Welcome! ")
     while 1:
-        movies = inventory()
-        orders = orderHistory()
-        userCart = cart()
-        user: account = None
-
-
-        print("Welcome")
-        while 1:
-            loginChoice = input(str("login or create account? "))
-            if loginChoice == 'login':
-                username = input(str("Username: "))            
-                password = input(str("Password: "))
-
-                acc: accountclass = account.authenticate(username, password)
-                user = account()
-                user.account = acc
-                if user.account:
-                    break
-                else:
-                    print("Error: Username and password is incorrect")
-                    continue
-            elif loginChoice == 'create account':
-                fName = input(str("Enter your first name: "))
-                lName = input(str("Enter your last name "))
-                username = input(str("Enter New Username: "))
-                password = input(str("Enter Password: "))
-                creditCard = input(str("Enter card number: "))
-                shippingAddr = input(str("Enter your Shipping Address: "))
-                billingAddr = input(str("Enter your Billing Addrress: "))
-                user = account()
-                user.createAccount(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
-                continue
+        loginChoice = input(str("Would you like to: login or create account? "))
+        if loginChoice == 'login':
+            username = input(str("Enter your Username: "))            
+            password = input(str("Enter your Password: "))
+            
+            acc: accountclass = account.authenticate(username, password)
+            user = account()
+            user.account = acc
+            if user.account:
+                break
             else:
+                print("Error: The Username and password combination does not exist. ")
                 continue
-        session = True        
-        print("Authentication successful: ")
-        while session:
-            print("Options => view items, view cart, add cart item, remove from cart, checkout, view order history, edit account, delete account, logout")
-            command = input(str("Enter one of the commands above: "))
-            movies, orders, userCart, user, session = parser(command, movies, orders, userCart, user, session)
+        elif loginChoice == 'create account':
+            fName = input(str("Enter your first name: "))
+            lName = input(str("Enter your last name "))
+            username = input(str("Enter a New Username: "))
+            password = input(str("Enter a Password: "))
+            creditCard = input(str("Enter your credit/debit card number: "))
+            shippingAddr = input(str("Enter your Shipping Address: "))
+            billingAddr = input(str("Enter your Billing Addrress: "))
+            user = account()
+            user.createAccount(fName, lName, username, password, creditCard, shippingAddr, billingAddr)
+            continue
+        else:
+            continue
+
+    print("Authentication was successful: ")
+    while 1:
+        print(" AvOptions => view items, view cart, add cart item, remove from cart, checkout,\n view order history, edit account, delete account, logout")
+        command = input(str("Enter one of the above commands that you would like to perform: "))
+        movies, orders, userCart, user = parser(command, movies, orders, userCart, user)
 
 
 if __name__=="__main__":
+    user: account = None
     
-    
-    main()
+    main(user)

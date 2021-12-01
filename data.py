@@ -44,7 +44,12 @@ def InitializeDB(dbFile='/shop.db'):
         connection.execute("INSERT INTO Movie VALUES ('142389', 'The Godfather', 25.49, 'R', 'Crime, Drama', 45)")
         connection.execute("INSERT INTO Movie VALUES ('239847', 'Inception', 15.69, 'PG-13', 'Action, Adventure, Sci-Fi', 123)")
         connection.execute("INSERT INTO Movie VALUES ('927123', 'Goodfellas', 17, 'R', 'Crime', 1323)")
-        connection.execute("INSERT INTO Account VALUES ('adam', 'test', 'adam', 'pass', '445 4544 2324 4524', 'example', 'street')")
+        connection.execute("INSERT INTO Movie VALUES ('435915', 'No Time To Die', 14.99, 'PG-13', 'Action, Adventure, Comedy', 576)")
+        connection.execute("INSERT INTO Movie VALUES ('716252', 'Resident Evil: Welcome to Raccoon City', 18.79, 'R', 'Action, Horror, Sci-Fi', 923)")
+        connection.execute("INSERT INTO Movie VALUES ('572567', 'Free Guy', 10.79, 'PG-13', 'Action, Adventure, Comedy', 576)")
+        connection.execute("INSERT INTO Movie VALUES ('825674', 'King Richard', 19.79, 'Biography', 'Drama, Sport,', 879)")
+        connection.execute("INSERT INTO Account VALUES ('adam', 'test', 'adam', 'pass', '4455 4544 2324 4524', '210 Highway 12', '210 Highway 12')")
+        connection.execute("INSERT INTO Account VALUES ('Ollie', 'Bland', 'OTB8', 'qwer1234', '1111 2222 3333 4444', '1900 School Blvd', '1900 School Blvd')")
 
     except:
         pass
