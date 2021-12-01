@@ -168,7 +168,7 @@ class cart:
             return False
 
     def removeFromCart(self, itemID):
-
+        
         connection.execute("DELETE FROM CartItem WHERE rowid=?", (itemID,))
         connection.commit()
 
@@ -273,9 +273,6 @@ def parser(string, movies: inventory, orders: orderHistory, userCart: cart, user
             print("\nError! You did not enter either a valid title or quantity. Please try again.\n")
 
     elif string == "Remove from cart":
-        for i in self.entries:
-            print("Entry Num: " + str(i.pk) + " Title: " + i.title + " Quantity: " + str(i.quantity))
-        print("\n")
         cartID = input(str("\nEnter cart Num you would like to remove: "))
         userCart.removeFromCart(cartID)
     elif string == "Checkout":
