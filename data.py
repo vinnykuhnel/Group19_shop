@@ -40,16 +40,19 @@ def InitializeDB(dbFile='/shop.db'):
      FOREIGN KEY(cartID) REFERENCES Cart(rowid));''')
 
     try:
-        connection.execute("INSERT INTO Movie VALUES ('197278', 'The Shawshank Redemption', 19.99, 'R', 'Drama', 75)")
-        connection.execute("INSERT INTO Movie VALUES ('142389', 'The Godfather', 25.49, 'R', 'Crime, Drama', 45)")
-        connection.execute("INSERT INTO Movie VALUES ('239847', 'Inception', 15.69, 'PG-13', 'Action, Adventure, Sci-Fi', 123)")
-        connection.execute("INSERT INTO Movie VALUES ('927123', 'Goodfellas', 17, 'R', 'Crime', 1323)")
-        connection.execute("INSERT INTO Movie VALUES ('435915', 'No Time To Die', 14.99, 'PG-13', 'Action, Adventure, Comedy', 576)")
-        connection.execute("INSERT INTO Movie VALUES ('716252', 'Resident Evil: Welcome to Raccoon City', 18.79, 'R', 'Action, Horror, Sci-Fi', 923)")
-        connection.execute("INSERT INTO Movie VALUES ('572567', 'Free Guy', 10.79, 'PG-13', 'Action, Adventure, Comedy', 576)")
-        connection.execute("INSERT INTO Movie VALUES ('825674', 'King Richard', 19.79, 'Biography', 'Drama, Sport,', 879)")
+        connection.execute("INSERT INTO Movie VALUES ('197278', 'The Shawshank Redemption', 19.99, 'R', 'Drama', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('142389', 'The Godfather', 24.99, 'R', 'Crime, Drama', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('239847', 'Inception', 14.99, 'PG-13', 'Action, Adventure, Sci-Fi',200)")
+        connection.execute("INSERT INTO Movie VALUES ('927123', 'Goodfellas', 17.99, 'R', 'Crime', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('435915', 'No Time To Die', 14.99, 'PG-13', 'Action, Adventure, Comedy', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('716252', 'Halloween', 18.99, 'R', 'Horror, Thriller, Crime', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('502710', 'Us', 14.99, 'R', 'Horror, Mystery, Thriller', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('572567', 'Free Guy', 10.99, 'PG-13', 'Action, Adventure, Comedy', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('348941', 'Life', 9.99, 'R', ' Comedy, Crime, Drama', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('825674', 'King Richard', 19.99, 'Biography', 'Drama, Sport,', 200)")
+        connection.execute("INSERT INTO Movie VALUES ('681086', 'Love and Basketball', 9.99, 'Romance', 'Drama, Sport,', 200)")
         connection.execute("INSERT INTO Account VALUES ('adam', 'test', 'adam', 'pass', '4455 4544 2324 4524', '210 Highway 12', '210 Highway 12')")
-        connection.execute("INSERT INTO Account VALUES ('Ollie', 'Bland', 'OTB8', 'qwer1234', '1111 2222 3333 4444', '1900 School Blvd', '1900 School Blvd')")
+        connection.execute("INSERT INTO Account VALUES ('Ollie', 'Bland', 'OTB8', '1234', '1111 2222 3333 4444', '1900 School Blvd', '1900 School Blvd')")
 
     except:
         pass
